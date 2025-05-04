@@ -1,13 +1,36 @@
-# File Management System - User Guide
+# File Management System (Multithreaded) - User Guide
 
 ## Overview
-This application provides a command-line interface for managing files and directories in a virtual file system. It supports basic file operations, directory navigation, and persistence.
+This multithreaded file management system simulates concurrent file operations using a virtual file system stored in sample.dat. It supports simultaneous input through multiple threads, synchronized using semaphores to avoid data races and ensure safe access.
 
 ## Getting Started
+### Requirements
+* Python 3.x
+* No external dependencies
+
+### Running the Program
 Run the application by executing the following commands
 ```bash
-python main.py
+python main.py <k>
 ```
+Where <k> is the number of threads (e.g., python main.py 3).
+
+Each thread reads from a corresponding file:
+* input_thread1.txt
+* input_thread2.txt
+* ...
+* input_thread\<k>.txt
+
+Each thread writes its output to:
+* output_thread1.txt
+* output_thread2.txt
+* ...
+* output_thread\<k>.txt
+
+The system persists all changes to sample.dat
+
+## Input File Format
+Each input_thread<x>.txt should contain valid commands (one per line) based on the syntax defined below. These commands will be executed sequentially by the corresponding thread
 
 ## Command Reference
 
@@ -40,39 +63,38 @@ python main.py
 
 ## Examples
 
-### 1. Create and write to a file:
+### 1. Thread Input Example (input_thread1.txt)
 ```bash
-create report.txt              # create a file "report.txt"
-open report.txt w              # open "report.txt" in write mode
-write "Annual Report 2023" 0   # write the text at the beginning of the file
-append "\nQ1 Results: $1.2M"   # append new text to the end of the file
-close                          # close the currently open file
+create log.txt
+open log.txt w
+write "Log start" 0
+append " - More logs"
+close
 ```
 
-### 2. Directory operations:
+## Thread Output
+Each command’s output or error is logged into the corresponding output_thread<x>.txt file.
+
+## File Structure
 ```bash
-mkDir Projects                 # create a directory named "Projects"
-chDir Projects                 # change into the "Projects" directory
-create README.md               # create a file named "README.md" in "Projects"
-open README.md w               # open "README.md" in write mode
-write "# Project Documentation" 0  # write a heading at the start of the file
-close                          # close the currently open file
-chDir ..                       # move back to the parent directory
+.
+├── sample.dat                # Serialized virtual file system (persistent)
+├── main.py                   # Entry point to run threads
+├── file_manager.py           # Core logic for file operations
+├── input_thread1.txt         # Input for thread 1
+├── input_thread2.txt         # Input for thread 2
+├── ...                       # More thread inputs
+├── output_thread1.txt        # Output from thread 1
+├── output_thread2.txt        # Output from thread 2
+├── ...                       # More thread outputs
+└── guide.md                  # This user guide
 ```
 
-### 3. Advanced file operations:
-```bash
-open data.txt w                # open "data.txt" in write mode
-write "ABCDEFGHIJKLMNOPQRSTUVWXYZ" 0  # write the alphabet at the start
-moveFile data.txt 5 10 0       # move 10 characters from position 5 to position 0
-read data.txt                  # display the contents of "data.txt"
-truncate data.txt 15           # truncate the file to 15 characters
-close                          # close the currently open file
-```
+## Notes
+* All threads share the same file system, so file and directory conflicts may occur if not coordinated properly.
+* sample.dat is updated after each thread finishes execution.
+* Semaphores ensure that concurrent operations do not corrupt file system state.
 
-### 4. System inspection:
-```bash
-list                           # list files and directories in the current directory
-memory                         # show the memory map of the file system
-exit                           # save changes and exit the program
-```
+## Known Limitations
+* Commands are assumed to be valid (no deep input validation).
+* File names and directory names are case-sensitive

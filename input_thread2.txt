@@ -1,0 +1,4 @@
+create file2.txt
+open file2.txt w
+write "Test Data" 0
+read file2.txt
